@@ -1,0 +1,9 @@
+---
+- name: mfd_o_service_dnsmasq_restart
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: dnsmasq
+    state: restarted
+    enabled: yes
+  when: dnsmasq_conf.changed

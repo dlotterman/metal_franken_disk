@@ -1,0 +1,33 @@
+---
+- name: metal_get_instance_userdata_file
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/dlotterman/metal_code_snippets/main/boiler_plate_cloud_inits/ubuntu_22_04_v1.mime
+    dest: /tmp/ubuntu_22_04_v1.mime
+    mode: '0640'
+
+- name: metal_get_or_provision_mfdh
+  equinix.cloud.metal_device:
+    hostname: "mfdh-01"
+    tags: mfd,mfdh,ansible,monitoring
+    operating_system: ubuntu_22_04
+    project_id: YOUR_PROJECT_HERE
+    metro: "{{ metal_metro }}"
+    userdata: "{{ lookup('file', '/tmp/ubuntu_22_04_v1.mime') }}"
+    plan: "n3.xlarge.x86"
+    state: present
+  register: metal_get_or_provision_mfdh_output
+
+- name: metal_get_or_provision_mfdc
+  equinix.cloud.metal_device:
+    project_id: YOUR_PROJECT_HERE
+    hostname: "mfdc-{{ item }}"
+    tags: mfd,mfdc,ansible,monitoring
+    operating_system: ubuntu_22_04
+    metro: "{{ metal_metro }}"
+    userdata: "{{ lookup('file', '/tmp/ubuntu_22_04_v1.mime') }}"
+    plan: "m3.large.x86"
+    state: present
+  register: metal_get_or_provision_mfdc_output
+  async: 500
+  poll: 0
+  with_sequence: start=1 end=4 stride=1 format=%02d

@@ -1,0 +1,14 @@
+---
+- name: grafana_restart
+  become: yes
+  become_method: sudo
+  systemd:
+    name: grafana
+    state: restarted
+
+- name: grafana_reload
+  become: yes
+  become_method: sudo
+  systemd:
+    name: grafana
+    daemon_reload: true

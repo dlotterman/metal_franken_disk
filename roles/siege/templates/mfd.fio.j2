@@ -1,0 +1,17 @@
+[global]
+bs=4k
+iodepth=128
+direct=1
+ioengine=libaio
+randrepeat=0
+group_reporting
+time_based
+#runtime=300
+filesize=80G
+#thread=16
+numjobs=16
+
+[job1]
+rw=read
+filename=/mnt/disk1/f1:/mnt/disk2/f1:/mnt/disk3/f1:/mnt/disk4/f1:/mnt/disk5/f1:/mnt/disk6/f1:/mnt/disk7/f1:/mnt/disk8/f1:/mnt/disk9/f1:/mnt/disk10/f1:/mnt/disk1/f2:/mnt/disk2/f2:/mnt/disk3/f2:/mnt/disk4/f2:/mnt/disk5/f2:/mnt/disk6/f2:/mnt/disk7/f2:/mnt/disk8/f2:/mnt/disk9/f2:/mnt/disk10/f2
+name=job1

@@ -1,0 +1,14 @@
+---
+- name: node_exporter_restart
+  become: yes
+  become_method: sudo
+  systemd:
+    name: node_exporter
+    state: restarted
+
+- name: node_exporter_reload
+  become: yes
+  become_method: sudo
+  systemd:
+    name: node_exporter
+    daemon_reload: true

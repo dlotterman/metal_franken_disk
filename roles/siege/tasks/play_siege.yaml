@@ -1,0 +1,14 @@
+---
+- name: siege_template_fio_conf_file
+  become: yes
+  become_method: sudo
+  template:
+    src: templates/mfd.fio.j2
+    dest: "/tmp/mfd.fio"
+    owner: root
+    group: root
+
+- name: client_execute_iperf
+  become: true
+  become_method: sudo
+  ansible.builtin.command: 'fio /tmp/mfd.fio --output=/tmp/mfd-fio.log'

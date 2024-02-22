@@ -1,0 +1,165 @@
+---
+- name: mfds_lvm
+  become: true
+  become_method: sudo
+  package:
+      name:
+        - lvm2
+        - nvme-cli
+        - fio
+      state: latest
+
+- name: mdfs_modprobe_nvme_tcp
+  become: true
+  become_method: sudo
+  community.general.modprobe:
+    name: nvme_tcp
+    state: present
+    persistent: present
+
+# - name: mdfh_discover_mdfc_exported_nvme_1
+  # become: true
+  # become_method: sudo
+  # ansible.builtin.shell:
+    # cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  # register: mdfh_discover_mdfc_exported_nvme
+
+# - name: mdfh_connect_mdfc_exported_nvme_1
+  # become: true
+  # become_method: sudo
+  # ansible.builtin.shell:
+    # cmd: nvme connect -t tcp -n nvmet1_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  # register: mdfh_connect_mdfc_exported_nvme
+  # ignore_errors: True
+  ####when: mdfh_discover_mdfc_exported_nvme.changed
+
+
+# - name: mdfh_discover_mdfc_exported_nvme_2
+  # become: true
+  # become_method: sudo
+  # ansible.builtin.shell:
+    # cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  # register: mdfh_discover_mdfc_exported_nvme
+
+# - name: mdfh_connect_mdfc_exported_nvme_2
+  # become: true
+  # become_method: sudo
+  # ansible.builtin.shell:
+    # cmd: nvme connect -t tcp -n nvmet2_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  # register: mdfh_connect_mdfc_exported_nvme
+  # ignore_errors: True
+
+- name: mdfh_list_mdfc_exported_nvme
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: nvme list
+
+- name: mdfh_format_mdfc
+  become: true
+  become_method: sudo
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ item }}"
+  loop:
+    - /dev/nvme2n1
+    - /dev/nvme3n1
+    - /dev/nvme4n1
+    - /dev/nvme5n1
+    - /dev/nvme6n1
+    - /dev/nvme7n1
+    - /dev/nvme8n1
+    - /dev/nvme9n1
+    - /dev/nvme10n1
+    - /dev/nvme11n1
+
+- name: mdfs_data_dirs
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: "/mnt/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - disk1
+    - disk2
+    - disk3
+    - disk4
+    - disk5
+    - disk6
+    - disk7
+    - disk8
+    - disk9
+    - disk10
+
+
+# - name: mdfh_mount_disks
+  # become: true
+  # become_method: sudo
+  # ansible.posix.mount:
+    # path: "/mnt/{{ item[0] }}"
+    # src: "{{ item[1] }}"
+    # fstype: xfs
+    # state: present
+  # with_nested:
+    # - ['/dev/nvme2n1', '/dev/nvme3n1', '/dev/nvme4n1', '/dev/nvme5n1', '/dev/nvme6n1', '/dev/nvme7n1', '/dev/nvme8n1', '/dev/nvme9n1']
+    # - ['disk1', 'disk2', 'disk3', 'disk4', 'disk5', 'disk6', 'disk7', 'disk8']
+
+- name: mdfh_mount_disks
+  become: true
+  become_method: sudo
+  ansible.posix.mount:
+    path: "/mnt/{{ item[1] }}"
+    src: "{{ item[0] }}"
+    fstype: xfs
+    state: mounted
+  #with_together old must update
+  with_together:
+    - ['/dev/nvme2n1', '/dev/nvme3n1', '/dev/nvme4n1', '/dev/nvme5n1', '/dev/nvme6n1', '/dev/nvme7n1', '/dev/nvme8n1', '/dev/nvme9n1', '/dev/nvme10n1', '/dev/nvme11n1']
+    - ['disk1', 'disk2', 'disk3', 'disk4', 'disk5', 'disk6', 'disk7', 'disk8', 'disk9', 'disk10']
+
+# - name: redhat_cloud_openshift_set_access_token
+  # ansible.builtin.set_fact:
+    # host_data_lol: "{{ hostvars.get(item) }}"
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: Print output to file
+  # ansible.builtin.copy:
+    # content: "{{ hostvars.get(item) }}"
+    # dest: /tmp/debug_file.{{ item }}
+  # delegate_to: localhost
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: redhat_cloud_openshift_set_access_token
+  # ansible.builtin.set_fact:
+    # host_data_lol2:
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: redhat_cloud_openshift_set_access_token3
+  # ansible.builtin.set_fact:
+    # host_data_lol2: "{{ hostvars.get(item)['ansible_facts'] | default([]) }}"
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: Print return information from the previous task6
+  # ansible.builtin.debug:
+    # msg: "{{ host_data_lol2 }}"
+    # verbosity: 2
+
+# - name: redhat_cloud_openshift_set_access_token2
+  # ansible.builtin.debug:
+    # msg: "{{ item }}"
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: redhat_cloud_openshift_set_access_token3
+  # ansible.builtin.debug:
+    # msg: "{{ hostvars.get(item).keys() }}"
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+
+# - name: redhat_cloud_openshift_set_access_token4
+  # ansible.builtin.debug:
+    # msg: "{{ hostvars.get(item)['metal_be_host'] }}"
+  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"

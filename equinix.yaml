@@ -1,0 +1,20 @@
+---
+# equinix.yaml
+plugin: equinix.cloud.metal_device
+
+strict: false
+keyed_groups:
+  - prefix: tag
+    key: tags
+  - prefix: equinix_metal_plan
+    key: plan
+  - key: metro
+    prefix: equinix_metal_metro
+  - key: state
+    prefix: equinix_metal_state
+
+compose:
+    metal_be_host: (ip_addresses | selectattr('address_family', 'equalto', 4) | selectattr('public', 'equalto', false) | first).address
+
+project_ids:
+#

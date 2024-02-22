@@ -1,0 +1,280 @@
+---
+### https://futurewei-cloud.github.io/ARM-Datacenter/qemu/nvme-of-tcp-vms/
+- name: mfds_lvm
+  become: true
+  become_method: sudo
+  package:
+      name:
+        - lvm2
+        - nvme-cli
+      state: latest
+
+- name: mdfs_modprobe_nvme_tcp
+  become: true
+  become_method: sudo
+  community.general.modprobe:
+    name: nvme_tcp
+    state: present
+    persistent: present
+
+- name: mdfs_target_names
+  ansible.builtin.set_fact:
+    target_1: "nvmet1_{{  inventory_hostname }}"
+    target_2: "nvmet2_{{  inventory_hostname }}"
+
+
+- name: mdfs_modprobe_nvmet_tcp
+  become: true
+  become_method: sudo
+  community.general.modprobe:
+    name: nvmet_tcp
+    state: present
+    persistent: present
+
+- name: mdfs_sys_mangle_1_1
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}
+    state: directory
+    mode: '0755'
+  register: mdfs_sys_mangle_1_1_output
+
+- name: mdfs_sys_mangle_1_3
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}
+    cmd: echo -n 1 | sudo tee -a attr_allow_any_host
+  #when: mdfs_sys_mangle_1_1_output.changed
+
+- name: mdfs_sys_mangle_1_3
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}/namespaces/1
+    state: directory
+    mode: '0755'
+
+- name: mdfs_sys_mangle_1_4
+  ansible.builtin.shell:
+    cmd: echo -n /dev/nvme0n1 | sudo tee -a device_path
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}/namespaces/1/
+  #ignore_errors: True
+  when: mdfs_sys_mangle_1_1_output.changed
+
+- name: mdfs_sys_mangle_1_5
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: echo -n 1 | sudo tee -a enable
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}/namespaces/1/
+  ##when: mdfs_sys_mangle_1_1_output.changed
+
+- name: mdfs_sys_mangle_1_6_port_dir
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/ports/1
+    state: directory
+    mode: '0755'
+  register: mdfs_sys_mangle_1_6_port_dir_output
+
+
+- name: mdfs_sys_mangle_1_7
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/1
+    cmd: echo {{ metal_be_host }} | sudo tee -a addr_traddr
+  when: mdfs_sys_mangle_1_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_1_8
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/1/
+    cmd: echo tcp | sudo tee -a addr_trtype
+  when: mdfs_sys_mangle_1_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_1_9
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/1/
+    cmd: echo 4420 | sudo tee -a addr_trsvcid
+  when: mdfs_sys_mangle_1_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_1_10
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/1/
+    cmd: echo ipv4 | sudo tee -a addr_adrfam
+  when: mdfs_sys_mangle_1_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_1_11
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    src: /sys/kernel/config/nvmet/subsystems/{{ target_1 }}/
+    dest: /sys/kernel/config/nvmet/ports/1/subsystems/{{ target_1 }}
+    state: link
+  when: mdfs_sys_mangle_1_6_port_dir_output.changed
+
+
+# CHANGE THE NAMING HERE THIS IS AWFUL
+- name: mdfs_sys_mangle_2_1
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}
+    state: directory
+    mode: '0755'
+  register: mdfs_sys_mangle_2_1_output
+
+- name: mdfs_sys_mangle_2_3
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}
+    cmd: echo -n 1 | sudo tee -a attr_allow_any_host
+  #when: mdfs_sys_mangle_2_1_output.changed
+
+- name: mdfs_sys_mangle_2_3
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}/namespaces/1
+    state: directory
+    mode: '0755'
+
+- name: mdfs_sys_mangle_1_4
+  ansible.builtin.shell:
+    cmd: echo -n /dev/nvme1n1 | sudo tee -a device_path
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}/namespaces/1/
+  #ignore_errors: True
+  when: mdfs_sys_mangle_2_1_output.changed
+
+- name: mdfs_sys_mangle_2_5
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: echo -n 1 | sudo tee -a enable
+    chdir: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}/namespaces/1/
+  ##when: mdfs_sys_mangle_2_1_output.changed
+
+- name: mdfs_sys_mangle_2_6_port_dir
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /sys/kernel/config/nvmet/ports/2
+    state: directory
+    mode: '0755'
+  register: mdfs_sys_mangle_2_6_port_dir_output
+
+
+- name: mdfs_sys_mangle_2_7
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/2
+    cmd: echo {{ metal_be_host }} | sudo tee -a addr_traddr
+  when: mdfs_sys_mangle_2_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_2_8
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/2/
+    cmd: echo tcp | sudo tee -a addr_trtype
+  when: mdfs_sys_mangle_2_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_2_9
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/2/
+    cmd: echo 4421 | sudo tee -a addr_trsvcid
+  when: mdfs_sys_mangle_2_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_2_10
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    chdir: /sys/kernel/config/nvmet/ports/2/
+    cmd: echo ipv4 | sudo tee -a addr_adrfam
+  when: mdfs_sys_mangle_2_6_port_dir_output.changed
+
+- name: mdfs_sys_mangle_2_11
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    src: /sys/kernel/config/nvmet/subsystems/{{ target_2 }}/
+    dest: /sys/kernel/config/nvmet/ports/2/subsystems/{{ target_2 }}
+    state: link
+  when: mdfs_sys_mangle_2_6_port_dir_output.changed
+
+
+
+
+
+
+
+
+
+
+
+
+# - name: Print return information from the previous task
+  # ansible.builtin.debug:
+    # msg: "{{ target_1 }}"
+    # verbosity: 1
+
+
+# - name: Print return information from the previous task
+  # ansible.builtin.debug:
+    # msg: "{{ hostvars.get(inventory_hostname) }}"
+    # verbosity: 1
+
+
+# - name: redhat_cloud_openshift_set_access_token
+  # ansible.builtin.set_fact:
+    # host_data_lol: "{{ hostvars.get(inventory_hostname) }}"
+# - name: Print return information from the previous task2s
+   # ansible.builtin.set_fact:
+    # host_data: "{{ hostvars.get(inventory_hostname) }}"
+
+# - name: Print output to file
+  # ansible.builtin.copy:
+    # content: "{{hostvars}}"
+    # dest: /tmp/debug_file
+  # delegate_to: localhost
+
+# - name: Print return information from the previous task
+  # ansible.builtin.debug:
+    # msg: "{{ metal_be_host }}"
+    # verbosity: 2
+############
+
+# - name: mdfs_sys_mangle_2
+  # become: true
+  # become_method: sudo
+  # ansible.builtin.file:
+    # path: /sys/kernel/config/nvmet/subsystems/nvmet1
+    # state: directory
+    # mode: '0755'
+# - name: mfds_vg1d
+  # become: true
+  # become_method: sudo
+  # community.general.lvg:
+      # vg: vg1d
+      # pvs: {{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd.*') | select('string') | list }}
+      # pesize: 16
+
+# - name: mfs_lv1d
+  # community.general.lvol:
+      # vg: vg1d
+      # lv:  lv1d
+      # size: +100%FREE
+      # force: yes

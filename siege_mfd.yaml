@@ -1,0 +1,13 @@
+---
+- name: siege_mfd
+  hosts: tag_mfdh
+  gather_facts: false
+  strategy: free
+  # vars:
+    # - ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
+  tasks:
+    - name: siege_fio
+      include_role:
+        name: siege
+        tasks_from: play_siege.yaml
