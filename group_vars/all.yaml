@@ -1,3 +1,12 @@
 metal_metro: sv
 prometheus_version: "2.50.0"
 grafana_version: "10.3.3"
+node_exporter_version: "1.7.0"
+metal_project_id: "{{ lookup('env', 'METAL_PROJ_ID') }}"
+metal_api_token: "{{ lookup('env', 'METAL_API_TOKEN') }}"
+
+
+metal_vlans:
+  - 3870
+stora_vlan: 3870
+mfd_id: mdf_1

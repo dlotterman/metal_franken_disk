@@ -1,19 +1,43 @@
 ---
 - name: provision_mfd
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
   strategy: free
   # vars:
     # - ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
   tasks:
-    - name: metal_provision_instance
+    - name: metal_meta
+      include_role:
+        name: metal
+        tasks_from: play_metal_meta.yaml
+
+    - name: metal_provision_instances
       include_role:
         name: metal
         tasks_from: play_metal_get_or_provision_instances.yaml
 
     - meta: refresh_inventory
 
+    # - name: metal_get_or_provision_stora_ip_reservation
+      # include_role:
+        # name: metal
+        # tasks_from: play_metal_get_or_provision_stora_ip_reservation.yaml
+
+    # - name: metal_get_or_provision_metal_vlans
+      # include_role:
+        # name: metal
+        # tasks_from: play_metal_get_or_provision_metal_vlans.yaml
+
+    # - name: metal_provision_metal_gateway
+      # include_role:
+        # name: metal
+        # tasks_from: play_metal_provision_metal_gateway.yaml
+- name: provision_mfd_wait
+  hosts: localhost
+  gather_facts: true
+
+  tasks:
     - name: metal_instance_wait
       include_role:
         name: metal

@@ -1,17 +1,17 @@
 [global]
-bs=4k
-iodepth=128
+bs=4B
+iodepth=512
 direct=1
 ioengine=libaio
 randrepeat=0
 group_reporting
 time_based
 #runtime=300
-filesize=80G
+filesize=10G
 #thread=16
-numjobs=16
+numjobs=32
 
 [job1]
-rw=read
-filename=/mnt/disk1/f1:/mnt/disk2/f1:/mnt/disk3/f1:/mnt/disk4/f1:/mnt/disk5/f1:/mnt/disk6/f1:/mnt/disk7/f1:/mnt/disk8/f1:/mnt/disk9/f1:/mnt/disk10/f1:/mnt/disk1/f2:/mnt/disk2/f2:/mnt/disk3/f2:/mnt/disk4/f2:/mnt/disk5/f2:/mnt/disk6/f2:/mnt/disk7/f2:/mnt/disk8/f2:/mnt/disk9/f2:/mnt/disk10/f2
+rw=write
+filename=/mnt/disk1/f1:/mnt/disk2/f1:/mnt/disk3/f1:/mnt/disk4/f1:/mnt/disk5/f1:/mnt/disk6/f1:/mnt/disk7/f1:/mnt/disk8/f1:/mnt/disk9/f1:/mnt/disk10/f1:/mnt/disk1/f2:/mnt/disk2/f2:/mnt/disk3/f2:/mnt/disk4/f2:/mnt/disk5/f2:/mnt/disk6/f2:/mnt/disk7/f2:/mnt/disk8/f2:/mnt/disk9/f2:/mnt/disk10/f2:/mnt/disk1/f3:/mnt/disk2/f3:/mnt/disk3/f3:/mnt/disk4/f3:/mnt/disk5/f3:/mnt/disk6/f3:/mnt/disk7/f3:/mnt/disk8/f3:/mnt/disk9/f3:/mnt/disk10/f3:/mnt/disk1/f4:/mnt/disk2/f4:/mnt/disk3/f4:/mnt/disk4/f4:/mnt/disk5/f4:/mnt/disk6/f4:/mnt/disk7/f4:/mnt/disk8/f4:/mnt/disk9/f4:/mnt/disk10/f4
 name=job1

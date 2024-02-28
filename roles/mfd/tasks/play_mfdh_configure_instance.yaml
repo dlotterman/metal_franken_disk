@@ -17,41 +17,54 @@
     state: present
     persistent: present
 
-# - name: mdfh_discover_mdfc_exported_nvme_1
-  # become: true
-  # become_method: sudo
-  # ansible.builtin.shell:
-    # cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
-  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
-  # register: mdfh_discover_mdfc_exported_nvme
+- name: mdfh_get_nvme_hostnqn"
+  become: true
+  become_method: sudo
+  shell: |
+    cat /etc/nvme/hostnqn
+  register: mdfh_get_nvme_hostnqn_output
 
-# - name: mdfh_connect_mdfc_exported_nvme_1
-  # become: true
-  # become_method: sudo
-  # ansible.builtin.shell:
-    # cmd: nvme connect -t tcp -n nvmet1_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
-  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
-  # register: mdfh_connect_mdfc_exported_nvme
-  # ignore_errors: True
-  ####when: mdfh_discover_mdfc_exported_nvme.changed
+- name: mdfh_set_nvme_hostnqn"
+  become: true
+  become_method: sudo
+  set_fact:
+    mdfh_hostnqn: mdfh_get_nvme_hostnqn_output.stdout
+
+- name: mdfh_discover_mdfc_exported_nvme_1
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  register: mdfh_discover_mdfc_exported_nvme
+
+- name: mdfh_connect_mdfc_exported_nvme_1
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: nvme connect -t tcp -n nvmet1_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4420 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  register: mdfh_connect_mdfc_exported_nvme
+  ignore_errors: True
+  ###when: mdfh_discover_mdfc_exported_nvme.changed
 
 
-# - name: mdfh_discover_mdfc_exported_nvme_2
-  # become: true
-  # become_method: sudo
-  # ansible.builtin.shell:
-    # cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
-  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
-  # register: mdfh_discover_mdfc_exported_nvme
+- name: mdfh_discover_mdfc_exported_nvme_2
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: nvme discover -t tcp -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  register: mdfh_discover_mdfc_exported_nvme
 
-# - name: mdfh_connect_mdfc_exported_nvme_2
-  # become: true
-  # become_method: sudo
-  # ansible.builtin.shell:
-    # cmd: nvme connect -t tcp -n nvmet2_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
-  # loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
-  # register: mdfh_connect_mdfc_exported_nvme
-  # ignore_errors: True
+- name: mdfh_connect_mdfc_exported_nvme_2
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: nvme connect -t tcp -n nvmet2_{{ item }} -a {{ hostvars.get(item)['metal_be_host'] }} -s 4421 --hostnqn=nqn.2014-08.org.nvmexpress:uuid:86f8f949-dd0d-43a6-b7ac-966973902452
+  loop: "{{ query('inventory_hostnames', 'tag_mfdc') }}"
+  register: mdfh_connect_mdfc_exported_nvme
+  ignore_errors: True
 
 - name: mdfh_list_mdfc_exported_nvme
   become: true
@@ -96,19 +109,6 @@
     - disk9
     - disk10
 
-
-# - name: mdfh_mount_disks
-  # become: true
-  # become_method: sudo
-  # ansible.posix.mount:
-    # path: "/mnt/{{ item[0] }}"
-    # src: "{{ item[1] }}"
-    # fstype: xfs
-    # state: present
-  # with_nested:
-    # - ['/dev/nvme2n1', '/dev/nvme3n1', '/dev/nvme4n1', '/dev/nvme5n1', '/dev/nvme6n1', '/dev/nvme7n1', '/dev/nvme8n1', '/dev/nvme9n1']
-    # - ['disk1', 'disk2', 'disk3', 'disk4', 'disk5', 'disk6', 'disk7', 'disk8']
-
 - name: mdfh_mount_disks
   become: true
   become_method: sudo
@@ -117,7 +117,7 @@
     src: "{{ item[0] }}"
     fstype: xfs
     state: mounted
-  #with_together old must update
+  #### with_together old must update
   with_together:
     - ['/dev/nvme2n1', '/dev/nvme3n1', '/dev/nvme4n1', '/dev/nvme5n1', '/dev/nvme6n1', '/dev/nvme7n1', '/dev/nvme8n1', '/dev/nvme9n1', '/dev/nvme10n1', '/dev/nvme11n1']
     - ['disk1', 'disk2', 'disk3', 'disk4', 'disk5', 'disk6', 'disk7', 'disk8', 'disk9', 'disk10']

@@ -1,0 +1,79 @@
+---
+- name: metal_get_ip_reservations
+  uri:
+    url: "https://api.equinix.com/metal/v1/projects/{{ metal_project_id }}/ips"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ metal_api_token }}"
+    status_code: [200]
+  register: metal_get_ip_reservations_output
+
+- name: metal_get_stora_ip_reservation_id
+  ansible.builtin.set_fact:
+    stora_ip_reservation_id: "{{ item[0].get('id') }}"
+  loop: "{{ metal_get_ip_reservations_output.json.get('ip_addresses') | subelements('tags') }}"
+  when: 'mfd_id in item'
+  ignore_errors: true
+  #no_log: true
+
+- name: metal_provision_stora_ip_reservation
+  uri:
+    url: "https://api.equinix.com/metal/v1/projects/{{ metal_project_id }}/ips"
+    method: POST
+    headers:
+      X-Auth-Token: "{{ metal_api_token }}"
+      Content-Type: "application/json"
+      Accept: application/json
+    body_format: json
+    body:
+      type: "private_ipv4"
+      quantity: 4
+      comments: "{{ mfd_id }}"
+      metro: "{{ metal_metro }}"
+      tags:
+        - "{{ mfd_id }}"
+        - "mfd"
+      fail_on_approval_required: "True"
+    return_content: true
+    status_code: [201, 422]
+  when: stora_ip_reservation_id is undefined
+  register: metal_provision_stora_ip_reservation_output
+  changed_when: metal_provision_stora_ip_reservation_output.status == 201
+
+- name: metal_provision_stora_ip_reservation_wait
+  ansible.builtin.pause:
+    seconds: 5
+  when: metal_provision_stora_ip_reservation_output.changed
+
+- name: metal_get_ip_reservations
+  uri:
+    url: "https://api.equinix.com/metal/v1/projects/{{ metal_project_id }}/ips"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ metal_api_token }}"
+    status_code: [200]
+  register: metal_get_ip_reservations_output
+
+- name: metal_get_stora_ip_reservation_id
+  ansible.builtin.set_fact:
+    stora_ip_reservation_id: "{{ item[0].get('id') }}"
+  loop: "{{ metal_get_ip_reservations_output.json.get('ip_addresses') | subelements('tags') }}"
+  when: 'mfd_id in item'
+  ignore_errors: true
+  no_log: true
+
+- name: metal_get_stora_ip_details
+  ansible.builtin.set_fact:
+    stora_ips_reservation_id: "{{ item[0].get('id') }}"
+    stora_ips_reservation_network: "{{ item[0].get('network') }}"
+    stora_ips_reservation_cidr: "{{ item[0].get('cidr') }}"
+    stora_ips_reservation_network_cidr: "{{ item[0].get('network') }}/{{ item[0].get('cidr') }}"
+  loop: "{{ metal_get_ip_reservations_output.json.get('ip_addresses') | subelements('tags') }}"
+  when: 'mfd_id in item'
+
+- name: metal_set_stora_ip_deployment_details
+  ansible.builtin.set_fact:
+    stora_ips_gateway_ip: "{{ stora_ips_reservation_network_cidr | ansible.utils.nthhost(1) }}"
+    stora_ips_mfdh_ip: "{{ stora_ips_reservation_network_cidr | ansible.utils.nthhost(2) }}"
+    stora_ips_first_dhcp_ip: "{{ stora_ips_reservation_network_cidr | ansible.utils.nthhost(5) }}"
+    stora_ips_last_dhcp_ip: "{{ stora_ips_reservation_network_cidr | ansible.utils.nthhost(-2) }}"

@@ -2,52 +2,50 @@
 - name: configure_mfd
   hosts: tag_mfdc
   gather_facts: true
-  ##### vars:
-    ##### - ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
-  tasks:
-    - name: mfdc_configure_instances
-      include_role:
-        name: mfd
-        tasks_from: play_mfdc_configure_instances.yaml
+  # tasks:
+    # - name: mfdc_configure_instances
+      # include_role:
+        # name: mfd
+        # tasks_from: play_mfdc_configure_instances.yaml
 
-- name: configure_mfdh
-  hosts: tag_mfdh
-  gather_facts: true
+# - name: configure_mfdh
+  # hosts: tag_mfdh
+  # gather_facts: true
 
-  tasks:
+  # tasks:
 
-    - meta: refresh_inventory
-    - name: mfdh_configure_instances
-      include_role:
-        name: mfd
-        tasks_from: play_mfdh_configure_instance.yaml
+    # - meta: refresh_inventory
+    # - name: mfdh_configure_instances
+      # include_role:
+        # name: mfd
+        # tasks_from: play_mfdh_configure_instance.yaml
 
-- name: mdfm_configure
-  hosts: tag_mfd
-  gather_facts: true
+# - name: mdfm_configure
+  # hosts: tag_mfd
+  # gather_facts: true
 
-  tasks:
+  # tasks:
 
-    - meta: refresh_inventory
-    - name: mdfm_configure_node_exporter
-      include_role:
-        name: node_exporter
-        tasks_from: play_mdfm_node_exporter.yaml
+    # - meta: refresh_inventory
+    # - name: mdfm_configure_node_exporter
+      # include_role:
+        # name: node_exporter
+        # tasks_from: play_mdfm_node_exporter.yaml
 
-- name: mdfm_configure_prometheus
-  hosts: tag_mfdc[0]
-  gather_facts: false
-  strategy: free
-  vars:
-    - ansible_python_interpreter: auto_silent
-  tasks:
-    - meta: refresh_inventory
+# - name: mdfm_configure_prometheus
+  # hosts: tag_mfdc[0]
+  # gather_facts: false
+  # strategy: free
+  # vars:
+    # - ansible_python_interpreter: auto_silent
+  # tasks:
+    # - meta: refresh_inventory
 
-    - name: mdfm_play_manage_prometheus
-      include_role:
-        name: prometheus
-        tasks_from: play_mdfm_manage_prometheus.yaml
+    # - name: mdfm_play_manage_prometheus
+      # include_role:
+        # name: prometheus
+        # tasks_from: play_mdfm_manage_prometheus.yaml
 
 - name: grafana_configure
   hosts: tag_mfdc[0]

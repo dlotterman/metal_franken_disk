@@ -1,0 +1,19 @@
+---
+- name: metal_provision_stora_metal_gateway
+  equinix.cloud.metal_vlan:
+    project_id: "{{ metal_project_id }}"
+    #private_ipv4_subnet_size: 4
+    virtual_network_id: "{{ stora_vlan_id }}"
+  register: metal_provision_stora_metal_gateway_output
+
+# - name: metal_provision_stora_metal_gateway
+  # uri:
+    # url: "https://api.equinix.com/metal/v1/projects/{{ metal_project_id }}/metal-gateways
+    # method: POST
+    # headers:
+      # X-Auth-Token: "{{ metal_api_token }}"
+    # body_format: json
+    # body:
+      # virtual_network_id: "{{ stora_vlan }}"
+      # private_ipv4_subnet_size: 4
+    # status_code: [201, 422]

@@ -10,16 +10,18 @@
     hostname: "mfdh-01"
     tags: mfd,mfdh,ansible,monitoring
     operating_system: ubuntu_22_04
-    project_id: YOUR_PROJECT_HERE
+    project_id: "{{ metal_project_id }}"
     metro: "{{ metal_metro }}"
     userdata: "{{ lookup('file', '/tmp/ubuntu_22_04_v1.mime') }}"
     plan: "n3.xlarge.x86"
     state: present
+  async: 500
+  poll: 0
   register: metal_get_or_provision_mfdh_output
 
 - name: metal_get_or_provision_mfdc
   equinix.cloud.metal_device:
-    project_id: YOUR_PROJECT_HERE
+    project_id: "{{ metal_project_id }}"
     hostname: "mfdc-{{ item }}"
     tags: mfd,mfdc,ansible,monitoring
     operating_system: ubuntu_22_04

@@ -8,9 +8,9 @@ After=network-online.target
 User=grafana
 Group=grafana
 Type=notify
-ExecStart=/metal/grafana/bin/grafana-v{{ grafana_version }}/bin/grafana-server                     \
-                            -config /metal/grafana/config/grafana_conf.ini       \
+ExecStart=/metal/grafana/grafana-v{{ grafana_version }}/bin/grafana-server                     \
+                            -config /metal/grafana/grafana-v{{ grafana_version }}/grafana_conf.ini       \
                             -pidfile /metal/grafana/run/grafana.pid         		\
-							-homepath /metal/grafana/bin/grafana-v{{ grafana_version }}/
+							-homepath /metal/grafana/grafana-v{{ grafana_version }}/
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,34 @@
+---
+- name: metal_provision_metal_vlans
+  equinix.cloud.metal_vlan:
+    description: "{{ mfd_id }}"
+    metro: "{{ metal_metro }}"
+    vxlan: "{{ item }}"
+    project_id: "{{ metal_project_id }}"
+  loop: "{{ metal_vlans }}"
+  register: metal_provision_metal_vlans_output
+
+# - name: metal_provision_metal_vlans
+  # uri:
+    # url: "https://api.equinix.com/metal/v1/projects/{{ metal_project_id }}/virtual-networks"
+    # method: POST
+    # headers:
+      # X-Auth-Token: "{{ metal_api_token }}"
+    # body_format: json
+    # body:
+      # metro: "{{ metal_metro }}"
+      # vxlan: "{{ item }}"
+      # description: "metal_mfd provisioned }}"
+    # status_code: [201, 422]
+  # loop: "{{ metal_vlans }}"
+  # register: metal_provision_metal_vlans_output
+
+
+- name: metal_meta_print_project_id
+  become: true
+  become_method: sudo
+  ansible.builtin.set_fact:
+    stora_vlan_id: "{{ item.id }}"
+  delegate_to: localhost
+  loop: "{{ metal_provision_metal_vlans_output.results }}"
+  when: item.get('vxlan') == stora_vlan

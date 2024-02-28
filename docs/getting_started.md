@@ -1,3 +1,14 @@
+WIP
+
+
+
+#### Reboot hosts / clear configuration
+
+Most of the heavy lifting configuration done by this repository is not written to the disk of the deployed Metal instances. This means simply rebooting the provisioned instances should be an easy way to reset any misconfiguration.
+
+`ansible all -u adminuser -i /dev/shm/equinix.yaml -b -B 1 -P 0 -m shell -a "sleep 5 && reboot"`
+
+
 
 git clone https://github.com/dlotterman/metal_franken_disk
 
